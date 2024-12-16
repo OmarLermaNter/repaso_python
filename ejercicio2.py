@@ -1,66 +1,4 @@
-'''
-Ejercicio de Examen: Red Social Ficticia
-Objetivo:
-Desarrollar un programa en Python para gestionar una red social ficticia, donde puedas registrar usuarios, crear publicaciones, agregar comentarios a las publicaciones y listar todo el contenido. La información debe ser persistente, guardándose en archivos de texto (no en listas) y cargándose al iniciar el programa.
-Requisitos:
-Clase Usuario:
-La clase Usuario debe tener los siguientes atributos:
-id: Un identificador único para el usuario (número entero).
-nombre: Nombre del usuario (cadena de texto).
-email: Correo electrónico del usuario (cadena de texto).
-publicaciones: Una lista interna de publicaciones del usuario (aunque no usaremos listas globales para almacenar, cada usuario tiene sus publicaciones asociadas).
-La clase Usuario debe tener al menos los siguientes métodos:
-crear_publicacion: Crear una nueva publicación (se le asociará un ID único).
-ver_publicaciones: Mostrar todas las publicaciones del usuario.
-Clase Publicacion:
-La clase Publicacion debe tener los siguientes atributos:
-id: Un identificador único para la publicación (número entero).
-contenido: El contenido textual de la publicación (cadena de texto).
-comentarios: Lista de comentarios (en cada comentario, almacenar el nombre del usuario que comentó y el texto del comentario).
-La clase Publicacion debe tener los siguientes métodos:
-agregar_comentario: Permitir agregar comentarios a la publicación.
-ver_comentarios: Mostrar todos los comentarios de la publicación.
-ver_detalles: Mostrar el contenido de la publicación junto con los comentarios.
-Clase RedSocial:
-La clase RedSocial será la encargada de manejar todas las interacciones y operaciones dentro de la red social:
-registrar_usuario: Permite agregar un nuevo usuario a la red social.
-crear_publicacion: Permite a los usuarios crear nuevas publicaciones.
-listar_usuarios: Muestra todos los usuarios registrados.
-listar_publicaciones: Muestra todas las publicaciones en la red social.
-ver_publicacion: Muestra una publicación y sus comentarios.
-Persistencia en Archivos:
-Los usuarios deben almacenarse en un archivo de texto (usuarios.txt) con el formato:
-
-id,nombre,email
-1,Juan Pérez,juan@correo.com
-2,Ana Gómez,ana@correo.com
-
-
-Las publicaciones deben almacenarse en un archivo de texto (publicaciones.txt) con el formato:
-
-id,usuario_id,contenido
-1,1,"Mi primer post"
-2,2,"Me encanta esta red social"
-
-
-Los comentarios deben almacenarse en un archivo de texto (comentarios.txt) con el formato:
-
-publicacion_id,usuario_nombre,comentario
-1,Juan Pérez,"¡Qué genial!"
-2,Ana Gómez,"Totalmente de acuerdo"
-
-
-Menú de Interacción:
-El programa debe permitir al usuario interactuar mediante un menú en consola:
-Crear un usuario.
-Crear una publicación (por un usuario).
-Agregar un comentario a una publicación.
-Ver los detalles de una publicación.
-Listar todos los usuarios.
-Listar todas las publicaciones.
-Ver los comentarios de una publicación.
-
-'''
+#Este será el método que mostrará el menú
 def mostrar_menu():
     print("\nMenu:")
     print("1. Crear un usuario.")
@@ -71,69 +9,213 @@ def mostrar_menu():
     print("6. Listar todas las publicaciones.")
     print("7. Ver los comentarios de una publicación.")
     print("8. Salir.")
+
+#variables globales con las que se crearán id autoincrementale y únicos
+id_usuario = 0
+id_publicacion = 0
+def comprobar_input(input:str):
+    import re
+    return re.match('^[0-9]+$',input)
+
+#Clase Comentario  
 class Comentario:
-    def __init__(self,nombre_usuario:str,texto_comentario:str):
+    def __init__(self,id_publicacion,nombre_usuario:str,texto_comentario:str):
+        self.id_publicacion = id_publicacion
         self.nombre_usuario = nombre_usuario
         self.contenido = texto_comentario
+    
+    #Método que actúa como toString
+    def __str__(self):
+        return f"{self.nombre_usuario}: {self.contenido}"
+
+#Clase Publicacion
 class Publicacion:
-    ultimo_id = 0
-    def __init__(self,contenido:str,comentarios: list[Comentario],):
-        self.ultimo_id+=1
-        self.id_publicacion = self.ultimo_id
+    def __init__(self,contenido:str,comentarios: list[Comentario],id_usuario: int):
+        global id_publicacion
+        id_publicacion += 1
+        self.id_usuario = id_usuario
+        self.id_publicacion = id_publicacion
         self.contenido = contenido
         self.comentarios = comentarios
+
+    #Métodos que permite ver todos los comentarios de una instancia de Publicacion
     def ver_comentarios(self):
-        print(self.comentarios)
+        for comentario in self.comentarios:
+            print(comentario)
+    
+    #Métodos que permite ver los detalles (contenido, comentarios) de una instancia de Publicacion
     def ver_detalles(self):
-        return {'contenido': self.contenido,'comentarios':self.comentarios}
+        comentarios = '['
+        for comentario in self.comentarios:
+            comentarios += str(comentario) + ','
+        comentarios += ']'
+        return f'contenido: {self.contenido},comentarios:{comentarios}'
+    
+    #Método que actúa como toString
+    def __str__(self):
+        return f'{self.id_publicacion}{self.contenido},{self.comentarios}'
+
+#Clase Usuario
 class Usuario:
-    ultimo_id = 0
     def __init__(self,nombre:str,email:str,publicaciones: list[Publicacion]):
-        self.ultimo_id += 1
-        self.id_usuario = self.ultimo_id
+        global id_usuario
+        id_usuario += 1
+        self.id_usuario = id_usuario
         self.nombre = nombre
         self.email = email
         self.publicaciones = publicaciones
-    
-    def crear_publicacion(self,contenido):
-        self.publicaciones.append(Publicacion(contenido,[]))
+
+    #Método que permite crear un usuario dentro una instancia de Usuario
+    def crear_publicacion(self,publicacion: Publicacion):
+        self.publicaciones.append(publicacion)
+        print(publicacion)
+        
+    #Método que permite ver las publicaciones de una instancia de Usuario
     def ver_publicaciones(self):
-        return self.publicaciones
-    '''
-    Clase RedSocial:
-La clase RedSocial será la encargada de manejar todas las interacciones y operaciones dentro de la red social:
-registrar_usuario: Permite agregar un nuevo usuario a la red social.
-crear_publicacion: Permite a los usuarios crear nuevas publicaciones.
-listar_usuarios: Muestra todos los usuarios registrados.
-listar_publicaciones: Muestra todas las publicaciones en la red social.
-ver_publicacion: Muestra una publicación y sus comentarios.'''
+        for publicacion in self.publicaciones:
+            print(publicacion)
+    
+    #Método que actúa como toString
+    def __str__(self):
+        return f'{self.id_usuario},{self.nombre},{self.email}.{self.publicaciones}'
+    
+#Clase RedSocial, encargada de gestionar todo lo que pasa en el programa
 class RedSocial:
     lista_usuarios = []
     lista_publicaciones = []
+    
     def __init__(self):
         pass
-    def registrar_usuario(self,nombre:str,email:str,publicaciones: list[Publicacion]):
-        self.lista_usuarios.append(Usuario(nombre,email,publicaciones))
-    def crear_publicacion(self,id_usuario:int,contenido:str):
-        usuario= list(filter(lambda usuario: usuario.ultimo_id == id_usuario,self.lista_usuarios))[0]
-        usuario.crear_publicacion(contenido)
+    
+    #Método que permite registrar un usuario
+    def registrar_usuario(self, nombre: str, email: str, publicaciones: list[Publicacion]):
+        import os
+        usuario = Usuario(nombre, email, publicaciones)
+        self.lista_usuarios.append(usuario)
+        self.guardar_usuarios_en_archivo()
+
+    #Método que permite crear una publicación de un usuario en concreto
+    def crear_publicacion(self, id_usuario: int, contenido: str):
+        import os
+        usuarios = list(filter(lambda usuario: usuario.id_usuario == id_usuario, self.lista_usuarios))
+        if len(usuarios) > 0:
+            usuario = usuarios[0]
+            publicacion = Publicacion(contenido, [], usuario.id_usuario)
+            self.lista_publicaciones.append(publicacion)
+            usuario.crear_publicacion(publicacion)
+            self.guardar_publicaciones_en_archivo()
+        else:
+            print('No existe un usuario con ese id')
+
+    #Método que permite listar todos los usuarios registrados
     def listar_usuarios(self):
-        print(self.lista_usuarios)
+        print("Usuarios registrados:")
+        for usuario in self.lista_usuarios:
+            print(f'ID: {usuario.id_usuario} - Nombre: {usuario.nombre} - Email: {usuario.email}')
+            if usuario.publicaciones:
+                print("  Publicaciones:")
+                for publicacion in usuario.publicaciones:
+                    print(f"    {publicacion.id_publicacion}: {publicacion.contenido}")
+            else:
+                print("  No tiene publicaciones.")
+
+    #Método que permite listar todos las publicaciones creadas
     def listar_publicaciones(self):
-        print(self.lista_publicaciones)
-    def ver_publicacion(self,id_publicacion:int):
-        publicacion= list(filter(lambda publicacion: publicacion.ultimo_id == id_publicacion,self.lista_publicaciones))[0]
-        return publicacion.ver_detalles()
-    def ver_comentarios(self,id_publicacion:int):
-        publicacion= list(filter(lambda publicacion: publicacion.ultimo_id == id_publicacion,self.lista_publicaciones))[0]
-        publicacion.ver_comentarios()
-        #asd
-    def annadir_comentario(self,id_publicacion:int,comentario:str):
-        publicacion= list(filter(lambda publicacion: publicacion.ultimo_id == id_publicacion,self.lista_publicaciones))[0]
-        publicacion.comentarios.append(comentario)
+        print("Publicaciones en la red social:")
+        for publicacion in self.lista_publicaciones:
+            print(f'ID: {publicacion.id_publicacion} - Usuario ID: {publicacion.id_usuario}')
+            print(f'  Contenido: {publicacion.contenido}')
+            if publicacion.comentarios:
+                print(f'  Comentarios:')
+                for comentario in publicacion.comentarios:
+                    print(f'    {comentario.nombre_usuario}: {comentario.contenido}')
+            else:
+                print(f'  No hay comentarios.')
+
+    #Método que permite ver los detalles de una publicación
+    def ver_publicacion(self, id_publicacion: int):
+        publicaciones = list(filter(lambda publicacion: publicacion.id_publicacion == id_publicacion, self.lista_publicaciones))
+        if len(publicaciones) > 0:
+            publicacion = publicaciones[0]
+            print(f'Contenido: {publicacion.contenido}')
+            if publicacion.comentarios:
+                print("Comentarios:")
+                for comentario in publicacion.comentarios:
+                    print(f'{comentario.nombre_usuario}: {comentario.contenido}')
+            else:
+                print("No hay comentarios en esta publicación.")
+        else:
+            print("No existe una publicación con ese ID.")
+   
+    #Método que permite ver los comentarios de una publicación
+    def ver_comentarios(self, id_publicacion: int):
+        publicaciones = list(filter(lambda publicacion: publicacion.id_publicacion == id_publicacion, self.lista_publicaciones))
+        if len(publicaciones) > 0:
+            publicacion = publicaciones[0]
+            if publicacion.comentarios:
+                for comentario in publicacion.comentarios:
+                    print(f'{comentario.nombre_usuario}: {comentario.contenido}')
+            else:
+                print("No hay comentarios en esta publicación.")
+        else:
+            print("No existe una publicación con ese ID.")
+    
+    #Método que permite añadir un comentario a una publicación, dando un usuario
+    def annadir_comentario(self, id_publicacion: int, id_usuario: int, contenido_comentario: str):
+        import os
+        try:
+            publicaciones = list(filter(lambda publicacion: publicacion.id_publicacion == id_publicacion, self.lista_publicaciones))
+            if len(publicaciones) > 0:
+                publicacion = publicaciones[0]
+                usuarios = list(filter(lambda usuario: usuario.id_usuario == id_usuario, self.lista_usuarios))
+                if len(usuarios) > 0:
+                    usuario = usuarios[0]
+                    comentario = Comentario(publicacion.id_publicacion, usuario.nombre, contenido_comentario)
+                    publicacion.comentarios.append(comentario)
+                    self.guardar_comentarios_en_archivo()
+                else:
+                    raise Exception('Usuario no encontrado')
+                    
+            else:
+                raise Exception('Publicación no encontrada')
+        except Exception as e:
+            print(e)
+
+    #Método que permite guardar los usuarios que se van creando en un archivo
+    def guardar_usuarios_en_archivo(self):
+        with open('./usuarios.txt', "w") as archivo:
+            cabecera = 'id,nombre,email\n'
+            archivo.write(cabecera)
+            for usuario in self.lista_usuarios:
+                datos = f'{usuario.id_usuario},{usuario.nombre},{usuario.email}\n'
+                archivo.write(datos)
+
+    #Método que permite guardar las publicaciones que se van creando en un archivo    
+    def guardar_publicaciones_en_archivo(self):
+        with open('./publicaciones.txt', "w") as archivo:
+            cabecera = 'id,usuario_id,contenido\n'
+            archivo.write(cabecera)
+            for publicacion in self.lista_publicaciones:
+                datos = f'{publicacion.id_publicacion},{publicacion.id_usuario},{publicacion.contenido}\n'
+                archivo.write(datos)
+
+    #Método que permite guardar los comentarios que se van creando en un archivo
+    def guardar_comentarios_en_archivo(self):
+        with open('./comentarios.txt', "w") as archivo:
+            cabecera = 'publicacion_id,usuario_nombre,comentario\n'
+            archivo.write(cabecera)
+            for publicacion in self.lista_publicaciones:
+                for comentario in publicacion.comentarios:
+                    datos = f'{comentario.id_publicacion},{comentario.nombre_usuario},{comentario.contenido}\n'
+                    archivo.write(datos)
+
+
 
 opcion = ''
 red_social = RedSocial()
+
+#Se mostrará el menú siempre que la selección sea distinta a 8, 
+# al insertar un id se comprobará que sea un digito numerico sin decimales, utilizando para ello comprobar_input()
 while opcion != '8':
     mostrar_menu()
     opcion = input()
@@ -143,39 +225,68 @@ while opcion != '8':
         print('Introduce un email')
         email = input()
         red_social.registrar_usuario(nombre,email,[])
-    
+   
     elif opcion == '2':
-        print('Introduce el id de usuario que quiere crear una publicacion')
-        id_usuario = int(input())
+        while True:
+            print('Introduce el id de usuario que quiere crear una publicacion')
+            input_introducido = input()
+            if comprobar_input(input_introducido):
+                break
+            print('Introduce un numero sin decimales')
+        id_usuario = int(input_introducido)
         print('Introduce el contenido que quieres que tenga la publicacion')
         contenido = input()
         red_social.crear_publicacion(id_usuario,contenido)
    
     elif opcion == '3':
-        print('Introduce el id de la publicacion a la que se quiere añadir un comentario')
-        id_publicacion = int(input())
+        while True:
+            print('Introduce el id de la publicacion a la que se quiere añadir un comentario')
+            input_introducido = input()
+            if comprobar_input(input_introducido):
+                break
+            print('Introduce un numero sin decimales')
+        id_publicacion = int(input_introducido)
+        while True:
+            print('Introduce el id del usuario que quiere añadir un comentario')
+            input_introducido2 = input()
+            if comprobar_input(input_introducido2):
+                break
+            print('Introduce un numero sin decimales')
+        id_usuario = int(input_introducido2)        
         print('Introduce el comentario que quieres que tenga la publicacion')
         comentario = input()
-        red_social.annadir_comentario(id_publicacion,comentario)
-    
+        red_social.annadir_comentario(id_publicacion,id_usuario,comentario)
+   
     elif opcion == '4':
-        print('Introduce el id de la publicacion a la que se quiere ver los detalles')
-        id_publicacion = int(input())
+        while True:
+            print('Introduce el id de la publicacion a la que se quiere conocer detalles')
+            input_introducido = input()
+            if comprobar_input(input_introducido):
+                break
+            print('Introduce un numero sin decimales')
+        id_publicacion = int(input_introducido) 
         red_social.ver_publicacion(id_publicacion)
-    
+   
     elif opcion == '5':
         red_social.listar_usuarios()
 
+
     elif opcion == '6':
         red_social.listar_publicaciones()
-    
+   
     elif opcion == '7':
-        print('Introduce el id de la publicacion a la que se quiere ver los comentarios')
-        id_publicacion = int(input())
+        while True:
+            print('Introduce el id de la publicacion a la que se quiere añadir un comentario')
+            input_introducido = input()
+            if comprobar_input(input_introducido):
+                break
+            print('Introduce un numero sin decimales')
+        id_publicacion = int(input_introducido) 
         red_social.ver_comentarios(id_publicacion)
-    
+   
     elif opcion == '8':
         print('Se va a salir del programa...')
-    
+   
     else:
         print('Elige una opción del 1-8')
+
